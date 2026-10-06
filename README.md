@@ -48,8 +48,43 @@ The MCP server acts as the bridge between the AI agent and the underlying custom
 
 ## MCP Registry
 
-The official MCP ecosystem provides a registry for discovering and publishing MCP servers:
+### Running the MCP Server Locally
 
-https://registry.modelcontextprotocol.io/
+Start the Spring Boot application:
 
-For more information about Model Context Protocol, see the official MCP documentation.
+```bash
+./mvnw spring-boot:run
+```
+
+The MCP server runs on:
+
+```text
+http://localhost:8090
+```
+
+The server uses the **Streamable HTTP** MCP transport.
+
+### Inspecting MCP Tools
+
+Since this MCP server is currently running locally and has **not been published to the MCP Registry**, the exposed tools can be inspected and tested using **MCP Inspector**.
+
+Start MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Open the URL provided by the Inspector, typically:
+
+```text
+http://localhost:6274
+```
+
+Configure the Inspector to connect using:
+
+```text
+Transport: Streamable HTTP
+MCP Server URL: http://localhost:8090/mcp
+```
+
+
