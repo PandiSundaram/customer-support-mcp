@@ -90,14 +90,11 @@ INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES
                                                                          (2, 4, 1, 199.99),   -- order 4471: ChefPro knife set
                                                                          (3, 5, 1, 39.99),    -- order 4502: kettle
                                                                          (3, 3, 1, 49.99),    -- order 4502: hand mixer
-                                                                         (4, 1, 1, 129.99),   -- order 3801: AeroBlend 300 (1st failure)
-                                                                         (5, 1, 1, 129.99);   -- order 4007: AeroBlend 300 (2nd failure)
+                                                                         (4, 1, 1, 129.99),   -- order 3801: AeroBlend 300
+                                                                         (5, 1, 1, 129.99);   -- order 4007: AeroBlend 300
 
 -- ---------------------------------------------------------------------------
 -- Payments
--- Order 4471 (Priya) has TWO captured charges with the same amount, seconds
--- apart, different transaction refs -> the classic duplicate charge.
--- (transaction_ref values are opaque identifiers, intentionally left static.)
 -- ---------------------------------------------------------------------------
 INSERT INTO payments (order_id, amount, currency, payment_method, transaction_ref, status, charged_at) VALUES
                                                                                                            (1, 129.99, 'USD', 'CARD', 'TXN-20260520-0001', 'CAPTURED', TIMESTAMP(CURDATE() - INTERVAL 22 DAY,  '14:03:11')),
@@ -109,8 +106,6 @@ INSERT INTO payments (order_id, amount, currency, payment_method, transaction_re
 
 -- ---------------------------------------------------------------------------
 -- Refunds — historical record of the two earlier blender replacements/refunds.
--- (The current 3rd-time refund and the 4471 duplicate refund are what the
---  agent is expected to CREATE at runtime, so they are intentionally absent.)
 -- ---------------------------------------------------------------------------
 INSERT INTO refunds (order_id, payment_id, amount, currency, reason, refund_type, status, created_at) VALUES
                                                                                                           (4, 5, 129.99, 'USD', 'Cracked jug on arrival — 1st incident, replacement issued', 'WARRANTY', 'PROCESSED', TIMESTAMP(CURDATE() - INTERVAL 175 DAY, '10:00:00')),

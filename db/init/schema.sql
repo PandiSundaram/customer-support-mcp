@@ -1,7 +1,7 @@
 -- =============================================================================
 -- Support Agent — schema
 --
--- utf8mb4 everywhere so raw customer emails (emoji, accents, Hindi/Devanagari,
+-- utf8mb4 everywhere so raw customer emails (emoji, accents, any languages,
 -- etc.) are stored losslessly. The agent reads these tables via the MCP server
 -- to: identify the customer & product, pull orders, check the warranty window,
 -- detect duplicate charges, recognise repeat failures, and take a resolution.
@@ -19,11 +19,7 @@ CREATE TABLE customers (
                            full_name          VARCHAR(150) NOT NULL,
                            email              VARCHAR(255) NOT NULL,
                            phone              VARCHAR(40),
-    -- ISO 639-1 hint (en, hi, ...). Lets the agent reply in the customer's
-    -- language even when one email mixes two (e.g. half English, half Hindi).
                            preferred_language VARCHAR(8)   NOT NULL DEFAULT 'en',
-    -- Drives goodwill decisions: a GOLD/PLATINUM customer with a repeat
-    -- failure is squarely in "just refund and apologise" territory.
                            loyalty_tier       ENUM('STANDARD','SILVER','GOLD','PLATINUM')
                                     NOT NULL DEFAULT 'STANDARD',
                            created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,14 +38,7 @@ CREATE TABLE products (
                           category        VARCHAR(80),
                           price           DECIMAL(10,2)  NOT NULL,
                           currency        CHAR(3)        NOT NULL DEFAULT 'USD',
-    -- Product-agnostic attribute bag (JSON). Holds whatever matters for THIS
-    -- product — voltage for an appliance, page count for a book, size for
-    -- apparel, etc. Pre-sales questions ("will the X200 run on European
-    -- voltage?") are answered straight from here, no order needed, and the
-    -- table stays neutral to any product category.
                           specifications  JSON,
-    -- Warranty length so the agent can test "is this still in the window?"
-    -- (0 = no warranty, e.g. books / consumables.)
                           warranty_months INT            NOT NULL DEFAULT 12,
                           stock_quantity  INT            NOT NULL DEFAULT 0,
                           created_at      TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -62,7 +51,6 @@ CREATE TABLE products (
 -- ---------------------------------------------------------------------------
 CREATE TABLE orders (
                         id               BIGINT        NOT NULL AUTO_INCREMENT,
-    -- Human-facing reference customers quote in emails ("order #4471").
                         order_number     VARCHAR(40)   NOT NULL,
                         customer_id      BIGINT        NOT NULL,
                         order_date       DATE          NOT NULL,
@@ -124,11 +112,10 @@ CREATE TABLE payments (
 CREATE TABLE refunds (
                          id          BIGINT        NOT NULL AUTO_INCREMENT,
                          order_id    BIGINT        NOT NULL,
-                         payment_id  BIGINT,                       -- which charge is being reversed
+                         payment_id  BIGINT,
                          amount      DECIMAL(10,2) NOT NULL,
                          currency    CHAR(3)       NOT NULL DEFAULT 'USD',
                          reason      VARCHAR(400),
-    -- Why the money is going back — useful for reporting & policy checks.
                          refund_type ENUM('GOODWILL','DUPLICATE_CHARGE','WARRANTY',
                      'RETURN','OTHER')        NOT NULL DEFAULT 'OTHER',
                          status      ENUM('REQUESTED','APPROVED','PROCESSED','REJECTED')
@@ -152,9 +139,8 @@ CREATE TABLE support_tickets (
                                  product_id        BIGINT,                 -- nullable: not always product-specific
                                  channel           ENUM('EMAIL','CHAT','PHONE') NOT NULL DEFAULT 'EMAIL',
                                  subject           VARCHAR(255),
-                                 raw_message       TEXT,                   -- the customer's words, verbatim
-                                 detected_language VARCHAR(20),            -- e.g. 'en', 'hi', 'en+hi'
-    -- What the agent decided the email is about.
+                                 raw_message       TEXT,
+                                 detected_language VARCHAR(20),
                                  intent            ENUM('REFUND_REQUEST','PRESALES_QUESTION','BILLING_ISSUE',
                            'WARRANTY_CLAIM','COMPLAINT','GENERAL','OTHER')
                                   NOT NULL DEFAULT 'OTHER',
@@ -162,7 +148,7 @@ CREATE TABLE support_tickets (
                                   NOT NULL DEFAULT 'NEUTRAL',
                                  status            ENUM('OPEN','RESOLVED','ESCALATED')
                                   NOT NULL DEFAULT 'OPEN',
-                                 resolution        TEXT,                   -- what was done / the reply summary
+                                 resolution        TEXT,
                                  created_at        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                  resolved_at       TIMESTAMP   NULL,
                                  PRIMARY KEY (id),
