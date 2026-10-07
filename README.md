@@ -4,11 +4,11 @@
 
 The server provides tools to:
 
-* 🔍 Query customer/user information
-* 📦 Retrieve customer orders and order details
-* 💰 Process refunds
-* 🎫 Create and update support tickets
-* 🤖 Enable AI agents to perform customer-support workflows through MCP tools
+*  Query customer/user information
+*  Retrieve customer orders and order details
+*  Process refunds
+*  Create and update support tickets
+*  Enable AI agents to perform customer-support workflows through MCP tools
 
 ## MCP Server
 
