@@ -1,11 +1,4 @@
--- =============================================================================
--- Support Agent — schema
---
--- utf8mb4 everywhere so raw customer emails (emoji, accents, any languages,
--- etc.) are stored losslessly. The agent reads these tables via the MCP server
--- to: identify the customer & product, pull orders, check the warranty window,
--- detect duplicate charges, recognise repeat failures, and take a resolution.
--- =============================================================================
+
 
 CREATE DATABASE IF NOT EXISTS mydatabase
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
